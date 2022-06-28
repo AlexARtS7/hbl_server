@@ -10,6 +10,17 @@ const User = sequelize.define('user', {
     role: {type: DataTypes.STRING, defaultValue: 'USER'}
 })
 
+const Products = sequelize.define('products', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {type: DataTypes.STRING, unique: true, allowNull: false},
+    price: {type: DataTypes.INTEGER, allowNull: false},
+    info: {type: DataTypes.STRING},
+    description: {type: DataTypes.STRING},
+    rating: {type: DataTypes.INTEGER, defaultValue: 0},
+    img: {type: DataTypes.STRING, allowNull: false}
+})
+
 module.exports = {
-    User
+    User,
+    Products
 }
