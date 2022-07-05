@@ -1,34 +1,25 @@
 const uuid = require('uuid')
 const path = require('path')
+const fs = require('fs');
 const {Products} = require('../models/models')
 const ApiError = require('../error/ApiError')
 
 class ProductsController {
     async create(req, res, next) {
-        // console.log('img::', req.body)
         try {
             let {name, price, specifications, description} = req.body
-            // const {img} = req.files
-            // console.log('img::', img)
-            // let files = JSON.parse(img)
-            // let fileName = uuid.v4() + '.jpg'
-            // img.mv(path.resolve(__dirname, '..', 'static', 'fileName.jpg'))
-            const product = await Products.create({name, price, specifications, description, img: 'fgf'})
-            // let files = JSON.parse(img)
-            // console.log('id:: ', res.json(product.id))
-            // files.forEach(i => {
-            //     img.mv(path.resolve(__dirname, '..', 'static', i))
-            // })
-            // if(info) {
-            //     info = JSON.parse(info)
-            //     info.forEach(i => 
-            //         DeviceInfo.create({
-            //             title: i.title,
-            //             description: i.description,
-            //             deviceId: device.id
-            //         })
-            //     )
-            // }
+            const {files} = req.files            
+            
+            const product = await Products.create({name, price, specifications, description})
+            fs.mkdirSync(`./static/${product.id}`);
+            let fileNames = []
+            files.forEach(e => {
+                let fileName = uuid.v4() + '.jpg'
+                e.mv(path.resolve(__dirname, '..', `static/${product.id}`, e.name))
+                fileNames.push(e.name)
+            })
+            product.img = JSON.stringify(fileNames)
+            await product.save()
             
             return res.json(product)          
             
