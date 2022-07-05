@@ -1,4 +1,3 @@
-const uuid = require('uuid')
 const path = require('path')
 const fs = require('fs');
 const {Products} = require('../models/models')
@@ -8,16 +7,22 @@ class ProductsController {
     async create(req, res, next) {
         try {
             let {name, price, specifications, description} = req.body
-            const {files} = req.files            
-            
+            const {files} = req.files
+            let filesArray = [] 
+            if(Array.isArray(files)) {
+                filesArray = [...files]
+            } else {
+                filesArray.push(files)
+            }
             const product = await Products.create({name, price, specifications, description})
             fs.mkdirSync(`./static/${product.id}`);
             let fileNames = []
-            files.forEach(e => {
-                let fileName = uuid.v4() + '.jpg'
+            
+            filesArray.forEach(e => {
                 e.mv(path.resolve(__dirname, '..', `static/${product.id}`, e.name))
                 fileNames.push(e.name)
             })
+            
             product.img = JSON.stringify(fileNames)
             await product.save()
             
