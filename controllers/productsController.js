@@ -33,35 +33,14 @@ class ProductsController {
         }
     }
     async getAll(req, res) {
-        // let {brandId, typeId, limit, page} = req.query
-        // page = page || 1
-        // limit = limit || 9
-        // let offset = page * limit - limit
         let devices = await Products.findAndCountAll();
-        // if(!brandId && !typeId) {
-        //     devices = await Device.findAndCountAll({limit, offset})
-        // }
-        // if(brandId && !typeId) {
-        //     devices = await Device.findAndCountAll({where:{brandId}, limit, offset})
-        // }
-        // if(!brandId && typeId) {
-        //     devices = await Device.findAndCountAll({where:{typeId}, limit, offset})
-        // }
-        // if(brandId && typeId) {
-        //     devices = await Device.findAndCountAll({where:{typeId, brandId}, limit, offset})
-        // }
         return res.json(devices)
     }
-    // async getOne(req, res) {
-    //     const {id} = req.params
-    //     const device = await Device.findOne(
-    //         {
-    //             where:{id},
-    //             include:[{model: DeviceInfo, as: 'info'}]
-    //         }
-    //     )
-    //     return res.json(device)
-    // }
+    async getOne(req, res) {
+        const {id} = req.params
+        const product = await Products.findOne({where:{id}})
+        return res.json(product)
+    }
 }
 
 module.exports = new ProductsController()
