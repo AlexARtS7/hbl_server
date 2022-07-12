@@ -6,7 +6,7 @@ const ApiError = require('../error/ApiError')
 class ProductsController {
     async create(req, res, next) {
         try {
-            let {name, price, specifications, description} = req.body
+            let {name, price, specifications, description, typeId} = req.body
             const {files} = req.files
             let filesArray = [] 
             if(Array.isArray(files)) {
@@ -14,7 +14,7 @@ class ProductsController {
             } else {
                 filesArray.push(files)
             }
-            const product = await Products.create({name, price, specifications, description})
+            const product = await Products.create({name, price, specifications, description, typeId})
             fs.mkdirSync(`./static/${product.id}`)
             let fileNames = []
             
@@ -33,7 +33,14 @@ class ProductsController {
         }
     }
     async getAll(req, res) {
-        let products = await Products.findAndCountAll();
+        let {typeId} = req.query
+        let products
+        if (!typeId) {
+            products = await Products.findAndCountAll()
+        }
+        if (typeId) {
+            products = await Products.findAndCountAll({where:{typeId}})
+        }
         return res.json(products)
     }
     async getOne(req, res) {
