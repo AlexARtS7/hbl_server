@@ -20,7 +20,16 @@ const Products = sequelize.define('products', {
     img: {type: DataTypes.STRING, defaultValue: 'ds' }
 })
 
+const Type = sequelize.define('type', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    name: {type: DataTypes.STRING, unique: true, allowNull: false},
+})
+
+Type.hasMany(Products)
+Products.belongsTo(Type)
+
 module.exports = {
     User,
-    Products
+    Products, 
+    Type
 }

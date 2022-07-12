@@ -15,7 +15,7 @@ class ProductsController {
                 filesArray.push(files)
             }
             const product = await Products.create({name, price, specifications, description})
-            fs.mkdirSync(`./static/${product.id}`);
+            fs.mkdirSync(`./static/${product.id}`)
             let fileNames = []
             
             filesArray.forEach(e => {
@@ -33,13 +33,23 @@ class ProductsController {
         }
     }
     async getAll(req, res) {
-        let devices = await Products.findAndCountAll();
-        return res.json(devices)
+        let products = await Products.findAndCountAll();
+        return res.json(products)
     }
     async getOne(req, res) {
         const {id} = req.params
         const product = await Products.findOne({where:{id}})
         return res.json(product)
+    }
+    async deleteOne(req, res) {
+        const {id} = req.params
+        try {
+            fs.rmSync(`static/${id}`, { recursive: true, force: true });
+            const result = await Products.destroy({where:{id}})
+            return res.json(result)
+        } catch (e) {
+            next(ApiError.notImplemented(e.message))
+        }
     }
 }
 
