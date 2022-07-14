@@ -32,6 +32,33 @@ class ProductsController {
             next(ApiError.badRequest(e.message))
         }
     }
+    async addFiles(req, res, next) {
+        try {
+            let {id} = req.body
+            const {files} = req.files
+            const product = await Products.findOne({where: {id}})
+            const imgArray = JSON.parse(product.img)
+            let filesArray = [] 
+            if(Array.isArray(files)) {
+                filesArray = [...files]
+            } else {
+                filesArray.push(files)
+            }
+            let fileNames = [...imgArray]
+            filesArray.forEach(e => {
+                e.mv(path.resolve(__dirname, '..', `static/${id}`, e.name))
+                fileNames.push(e.name)
+            })
+            
+            const img = JSON.stringify(fileNames)
+            await Products.update({img},{where: {id}})
+            
+            return res.json(img)          
+            
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
     async getAll(req, res) {
         let {typeId} = req.query
         let products
