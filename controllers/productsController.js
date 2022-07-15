@@ -1,3 +1,4 @@
+const uuid = require('uuid')
 const path = require('path')
 const fs = require('fs');
 const {Products} = require('../models/models')
@@ -19,8 +20,9 @@ class ProductsController {
             let fileNames = []
             
             filesArray.forEach(e => {
-                e.mv(path.resolve(__dirname, '..', `static/${product.id}`, e.name))
-                fileNames.push(e.name)
+                const fileName = uuid.v4() + ".jpg"
+                e.mv(path.resolve(__dirname, '..', `static/${product.id}`, fileName))
+                fileNames.push(fileName)
             })
             
             product.img = JSON.stringify(fileNames)
@@ -46,8 +48,9 @@ class ProductsController {
             }
             let fileNames = [...imgArray]
             filesArray.forEach(e => {
-                e.mv(path.resolve(__dirname, '..', `static/${id}`, e.name))
-                fileNames.push(e.name)
+                const fileName = uuid.v4() + ".jpg"
+                e.mv(path.resolve(__dirname, '..', `static/${product.id}`, fileName))
+                fileNames.push(fileName)
             })
             
             const img = JSON.stringify(fileNames)
