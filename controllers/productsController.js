@@ -36,10 +36,9 @@ class ProductsController {
     }
     async addFiles(req, res, next) {
         try {
-            let {id} = req.body
+            let {id, loadedFiles} = req.body
             const {files} = req.files
-            const product = await Products.findOne({where: {id}})
-            const imgArray = JSON.parse(product.img)
+            const imgArray = JSON.parse(loadedFiles)
             let filesArray = [] 
             if(Array.isArray(files)) {
                 filesArray = [...files]
@@ -49,7 +48,7 @@ class ProductsController {
             let fileNames = [...imgArray]
             filesArray.forEach(e => {
                 const fileName = uuid.v4() + ".jpg"
-                e.mv(path.resolve(__dirname, '..', `static/${product.id}`, fileName))
+                e.mv(path.resolve(__dirname, '..', `static/${id}`, fileName))
                 fileNames.push(fileName)
             })
             
