@@ -65,6 +65,9 @@ class ProductsController {
         try {
             let {id, filesArray:incommingArray} = req.body
             const deleteFilesArray = JSON.parse(incommingArray)
+            deleteFilesArray.forEach(e => {
+                fs.unlinkSync(path.resolve(__dirname, '..', `static/${id}`, e.name))
+            })
             const product = await Products.findOne({where: {id}})
             const imgArray = JSON.parse(product.img)
             const img = JSON.stringify(imgArray.filter(img => !deleteFilesArray.find(item => item.name === img)))
