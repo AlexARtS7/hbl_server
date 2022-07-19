@@ -85,6 +85,14 @@ class ProductsController {
             next(ApiError.badRequest(e.message))
         }
     }
+    async updateData(req, res, next) {
+        try {
+            let {id, name, price, specifications, description, typeId} = req.body
+            await Products.update({name, price, specifications, description, typeId},{where: {id}})        
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
     async getAll(req, res) {
         let {typeId} = req.query
         let products

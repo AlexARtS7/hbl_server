@@ -10,5 +10,6 @@ router.get('/:id', productsController.getOne)
 router.delete('/:id', checkRole('ADMIN'), productsController.deleteOne)
 router.post('/deletefiles', checkRole('ADMIN'), productsController.deleteFiles)
 router.post('/orderfiles', checkRole('ADMIN'), productsController.orderFiles)
+router.post('/updatedata', checkRole('ADMIN'), productsController.updateData)
 
 module.exports = router
