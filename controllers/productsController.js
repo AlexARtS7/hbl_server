@@ -36,9 +36,9 @@ class ProductsController {
     }
     async addFiles(req, res, next) {
         try {
-            let {id, loadedFiles} = req.body
+            let {id, filesArray:incommingArray} = req.body
             const {files} = req.files
-            const imgArray = JSON.parse(loadedFiles)
+            const imgArray = JSON.parse(incommingArray)
             let filesArray = [] 
             if(Array.isArray(files)) {
                 filesArray = [...files]
@@ -61,6 +61,30 @@ class ProductsController {
             next(ApiError.badRequest(e.message))
         }
     }
+    async deleteFiles(req, res, next) {
+        try {
+            let {id, filesArray:incommingArray} = req.body
+            const deleteFilesArray = JSON.parse(incommingArray)
+            const product = await Products.findOne({where: {id}})
+            const imgArray = JSON.parse(product.img)
+            const img = JSON.stringify(imgArray.filter(img => !deleteFilesArray.find(item => item.name === img)))
+            await Products.update({img},{where: {id}})
+            return res.json(incommingArray)          
+            
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
+    async orderFiles(req, res, next) {
+        try {
+            let {id, filesArray:incommingArray} = req.body
+            await Products.update({img:incommingArray},{where: {id}})
+            return res.json(incommingArray)          
+            
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
     async getAll(req, res) {
         let {typeId} = req.query
         let products
@@ -77,7 +101,7 @@ class ProductsController {
         const product = await Products.findOne({where:{id}})
         return res.json(product)
     }
-    async deleteOne(req, res) {
+    async deleteOne(req, res, next) {
         const {id} = req.params
         try {
             fs.rmSync(`static/${id}`, { recursive: true, force: true });
