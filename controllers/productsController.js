@@ -91,19 +91,25 @@ class ProductsController {
     async updateData(req, res, next) {
         try {
             let {id, name, price, specifications, description, typeId} = req.body
-            await Products.update({name, price, specifications, description, typeId},{where: {id}})        
+            const result = await Products.update({name, price, specifications, description, typeId},{where: {id}})    
+            return res.json(result)    
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
     async getAll(req, res) {
-        let {typeId} = req.query
+        let {typeId, limit, page} = req.query
+        
+        page = Number(page || 1)
+        limit = Number(limit || 9)
+        let offset = page * limit - limit
+        console.log('limit:::',limit,' offset::: ',offset)
         let products
         if (!typeId) {
-            products = await Products.findAndCountAll()
+            products = await Products.findAndCountAll({limit, offset})
         }
         if (typeId) {
-            products = await Products.findAndCountAll({where:{typeId}})
+            products = await Products.findAndCountAll({where:{typeId}, limit, offset})
         }
         return res.json(products)
     }
