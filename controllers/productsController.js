@@ -1,13 +1,48 @@
 const uuid = require('uuid')
 const path = require('path')
 const fs = require('fs');
-const {Products} = require('../models/models')
+const {Products, ProductInfo} = require('../models/models')
 const ApiError = require('../error/ApiError')
 
+const setInfo = async ({info,id}) => {
+    try {
+        info = JSON.parse(info)
+        
+        const allInfo = await ProductInfo.findAll({ where: {productId:id}})
+        if(info.length < allInfo.length) {
+            allInfo.forEach(item => info.find(i => i.idKey === item.idKey) ? null:
+                ProductInfo.destroy({where: {idKey:item.idKey}}))
+        }
+        
+        info.forEach(i =>
+            ProductInfo.findOne({where: {idKey:i.idKey}})
+            .then(response => {
+                if(response !== null) {
+                    ProductInfo.update({
+                        title: i.title,
+                        info: i.info,
+                        idKey: i.idKey,
+                        productId: id},{where: {idKey:i.idKey}})  
+                } else {
+                    ProductInfo.create({
+                        title: i.title,
+                        info: i.info,
+                        idKey: i.idKey,
+                        productId: id
+                    })
+                }
+            })
+        )
+        return 'ok'     
+            
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
 class ProductsController {
     async create(req, res, next) {
         try {
-            let {name, price, specifications, description, typeId} = req.body
+            let {name, price, typeId, info} = req.body
             const {files} = req.files
             let filesArray = [] 
             if(Array.isArray(files)) {
@@ -15,7 +50,7 @@ class ProductsController {
             } else {
                 filesArray.push(files)
             }
-            const product = await Products.create({name, price, specifications, description, typeId})
+            const product = await Products.create({name, price, typeId})
             fs.mkdirSync(`./static/${product.id}`)
             let fileNames = []
             
@@ -27,7 +62,9 @@ class ProductsController {
             
             product.img = JSON.stringify(fileNames)
             await product.save()
-            
+
+            if(info) await setInfo({info, id:product.id})
+
             return res.json(product)          
             
         } catch (e) {
@@ -90,8 +127,9 @@ class ProductsController {
     }
     async updateData(req, res, next) {
         try {
-            let {id, name, price, specifications, description, typeId} = req.body
-            const result = await Products.update({name, price, specifications, description, typeId},{where: {id}})    
+            let {id, name, price, typeId, info} = req.body
+            const result = await Products.update({name, price, typeId},{where: {id}})    
+            if(info) await setInfo({info, id})
             return res.json(result)    
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -103,7 +141,7 @@ class ProductsController {
         page = Number(page || 1)
         limit = Number(limit || 9)
         let offset = page * limit - limit
-        console.log('limit:::',limit,' offset::: ',offset)
+        
         let products
         if (!typeId) {
             products = await Products.findAndCountAll({limit, offset})
@@ -117,6 +155,11 @@ class ProductsController {
         const {id} = req.params
         const product = await Products.findOne({where:{id}})
         return res.json(product)
+    }
+    async getInfo(req, res) {
+        const {id} = req.params
+        const info = await ProductInfo.findAll({where: {productId:id}})
+        return res.json(info)
     }
     async deleteOne(req, res, next) {
         const {id} = req.params
