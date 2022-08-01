@@ -1,7 +1,7 @@
 const uuid = require('uuid')
 const path = require('path')
 const fs = require('fs');
-const {Products, ProductInfo} = require('../models/models')
+const {Products, ProductInfo, ProductDescription} = require('../models/models')
 const ApiError = require('../error/ApiError')
 
 const setInfo = async ({info,id}) => {
@@ -35,7 +35,7 @@ const setInfo = async ({info,id}) => {
         )
         return 'ok'     
             
-        } catch (e) {
+    } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
@@ -156,11 +156,13 @@ class ProductsController {
         const product = await Products.findOne({where:{id}})
         return res.json(product)
     }
+
     async getInfo(req, res) {
         const {id} = req.params
         const info = await ProductInfo.findAll({where: {productId:id}})
         return res.json(info)
     }
+
     async deleteOne(req, res, next) {
         const {id} = req.params
         try {
