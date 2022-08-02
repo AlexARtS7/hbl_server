@@ -29,15 +29,24 @@ const ProductInfo = sequelize.define('product_info', {
     idKey: {type: DataTypes.INTEGER, allowNull: false, unique: true}
 })
 
+const ProductDescription = sequelize.define('product_description', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    description: {type: DataTypes.TEXT, allowNull: false}
+})
+
 Type.hasMany(Products)
 Products.belongsTo(Type)
 
 Products.hasMany(ProductInfo);
 ProductInfo.belongsTo(Products)
 
+Products.hasOne(ProductDescription);
+ProductDescription.belongsTo(Products)
+
 module.exports = {
     User,
     Products, 
     ProductInfo,
+    ProductDescription,
     Type
 }

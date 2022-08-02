@@ -39,10 +39,26 @@ const setInfo = async ({info,id}) => {
             next(ApiError.badRequest(e.message))
         }
     }
+
+    const setDescription = async ({description,id}) => {
+        try {   
+            ProductDescription.findOne({where: {productId:id}})
+            .then(response => {
+                if(response !== null) {
+                    ProductDescription.update({description},{where: {productId:id}})  
+                } else {
+                    ProductDescription.create({description, productId:id})
+                }
+            })
+            return 'ok'             
+        } catch (e) {
+                next(ApiError.badRequest(e.message))
+            }
+    }
 class ProductsController {
     async create(req, res, next) {
         try {
-            let {name, price, typeId, info} = req.body
+            let {name, price, typeId, info, description} = req.body
             const {files} = req.files
             let filesArray = [] 
             if(Array.isArray(files)) {
@@ -64,6 +80,7 @@ class ProductsController {
             await product.save()
 
             if(info) await setInfo({info, id:product.id})
+            if(description) await setDescription({description, id:product.id})
 
             return res.json(product)          
             
@@ -127,9 +144,10 @@ class ProductsController {
     }
     async updateData(req, res, next) {
         try {
-            let {id, name, price, typeId, info} = req.body
+            let {id, name, price, typeId, info, description} = req.body
             const result = await Products.update({name, price, typeId},{where: {id}})    
             if(info) await setInfo({info, id})
+            if(description) await setDescription({description, id})
             return res.json(result)    
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -163,10 +181,19 @@ class ProductsController {
         return res.json(info)
     }
 
+    async getDescription(req, res) {
+        const {id} = req.params
+        let description = await ProductDescription.findOne({where: {productId:id}})
+        if(description === null) description = {description:''}
+        return res.json(description)
+    }
+
     async deleteOne(req, res, next) {
         const {id} = req.params
         try {
             fs.rmSync(`static/${id}`, { recursive: true, force: true });
+            ProductInfo.destroy({where: {productId:id}})
+            ProductDescription.destroy({where: {productId:id}})
             const result = await Products.destroy({where:{id}})
             return res.json(result)
         } catch (e) {
