@@ -1,133 +1,46 @@
-const uuid = require('uuid')
-const path = require('path')
-const fs = require('fs');
+const FilesService = require('../services/FilesService')
+const InformationService = require('../services/InformationService')
 const {Products, ProductInfo, ProductDescription} = require('../models/models')
 const ApiError = require('../error/ApiError')
-
-const setInfo = async ({info,id}) => {
-    try {
-        info = JSON.parse(info)
-        
-        const allInfo = await ProductInfo.findAll({ where: {productId:id}})
-        if(info.length < allInfo.length) {
-            allInfo.forEach(item => info.find(i => i.idKey === item.idKey) ? null:
-                ProductInfo.destroy({where: {idKey:item.idKey}}))
-        }
-        
-        info.forEach(i =>
-            ProductInfo.findOne({where: {idKey:i.idKey}})
-            .then(response => {
-                if(response !== null) {
-                    ProductInfo.update({
-                        title: i.title,
-                        info: i.info,
-                        idKey: i.idKey,
-                        productId: id},{where: {idKey:i.idKey}})  
-                } else {
-                    ProductInfo.create({
-                        title: i.title,
-                        info: i.info,
-                        idKey: i.idKey,
-                        productId: id
-                    })
-                }
-            })
-        )
-        return 'ok'     
-            
-    } catch (e) {
-            next(ApiError.badRequest(e.message))
-        }
-    }
-
-    const setDescription = async ({description,id}) => {
-        try {   
-            ProductDescription.findOne({where: {productId:id}})
-            .then(response => {
-                if(response !== null) {
-                    ProductDescription.update({description},{where: {productId:id}})  
-                } else {
-                    ProductDescription.create({description, productId:id})
-                }
-            })
-            return 'ok'             
-        } catch (e) {
-                next(ApiError.badRequest(e.message))
-            }
-    }
 class ProductsController {
     async create(req, res, next) {
         try {
             let {name, price, typeId, info, description} = req.body
             const {files} = req.files
-            let filesArray = [] 
-            if(Array.isArray(files)) {
-                filesArray = [...files]
-            } else {
-                filesArray.push(files)
-            }
             const product = await Products.create({name, price, typeId})
-            fs.mkdirSync(`./static/${product.id}`)
-            let fileNames = []
-            
-            filesArray.forEach(e => {
-                const fileName = uuid.v4() + ".jpg"
-                e.mv(path.resolve(__dirname, '..', `static/${product.id}`, fileName))
-                fileNames.push(fileName)
-            })
-            
+            await FilesService.MakeDir(product.id)
+            const fileNames = await FilesService.SaveFiles({files, id:product.id})
             product.img = JSON.stringify(fileNames)
             await product.save()
-
-            if(info) await setInfo({info, id:product.id})
-            if(description) await setDescription({description, id:product.id})
-
+            if(info) await InformationService.setInfo({info, id:product.id})
+            if(description) await InformationService.setDescription({description, id:product.id})
             return res.json(product)          
-            
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
     async addFiles(req, res, next) {
         try {
-            let {id, filesArray:incommingArray} = req.body
-            const {files} = req.files
-            const imgArray = JSON.parse(incommingArray)
-            let filesArray = [] 
-            if(Array.isArray(files)) {
-                filesArray = [...files]
-            } else {
-                filesArray.push(files)
-            }
-            let fileNames = [...imgArray]
-            filesArray.forEach(e => {
-                const fileName = uuid.v4() + ".jpg"
-                e.mv(path.resolve(__dirname, '..', `static/${id}`, fileName))
-                fileNames.push(fileName)
-            })
-            
+            let {id, filesArray} = req.body
+            const {files} = req.files 
+            const fileNames = await FilesService.SaveFiles({files, id, filesArray})
             const img = JSON.stringify(fileNames)
             await Products.update({img},{where: {id}})
-            
             return res.json(img)          
-            
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
     }
     async deleteFiles(req, res, next) {
         try {
-            let {id, filesArray:incommingArray} = req.body
-            const deleteFilesArray = JSON.parse(incommingArray)
-            deleteFilesArray.forEach(e => {
-                fs.unlinkSync(path.resolve(__dirname, '..', `static/${id}`, e.name))
-            })
+            let {id, filesArray} = req.body
+            filesArray = JSON.parse(filesArray)
+            await FilesService.DeleteFiles({id, filesArray})
             const product = await Products.findOne({where: {id}})
-            const imgArray = JSON.parse(product.img)
-            const img = JSON.stringify(imgArray.filter(img => !deleteFilesArray.find(item => item.name === img)))
+            const dbImgArray = JSON.parse(product.img)
+            const img = JSON.stringify(dbImgArray.filter(img => !filesArray.find(item => item.name === img)))
             await Products.update({img},{where: {id}})
-            return res.json(incommingArray)          
-            
+            return res.json(filesArray)          
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -136,8 +49,7 @@ class ProductsController {
         try {
             let {id, filesArray:incommingArray} = req.body
             await Products.update({img:incommingArray},{where: {id}})
-            return res.json(incommingArray)          
-            
+            return res.json(incommingArray)           
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
@@ -146,8 +58,8 @@ class ProductsController {
         try {
             let {id, name, price, typeId, info, description} = req.body
             const result = await Products.update({name, price, typeId},{where: {id}})    
-            if(info) await setInfo({info, id})
-            if(description) await setDescription({description, id})
+            if(info) await InformationService.setInfo({info, id})
+            if(description) await InformationService.setDescription({description, id})
             return res.json(result)    
         } catch (e) {
             next(ApiError.badRequest(e.message))
@@ -155,18 +67,12 @@ class ProductsController {
     }
     async getAll(req, res) {
         let {typeId, limit, page} = req.query
-        
         page = Number(page || 1)
         limit = Number(limit || 9)
         let offset = page * limit - limit
-        
         let products
-        if (!typeId) {
-            products = await Products.findAndCountAll({limit, offset})
-        }
-        if (typeId) {
-            products = await Products.findAndCountAll({where:{typeId}, limit, offset})
-        }
+        if (!typeId) products = await Products.findAndCountAll({limit, offset})
+        if (typeId) products = await Products.findAndCountAll({where:{typeId}, limit, offset})
         return res.json(products)
     }
     async getOne(req, res) {
@@ -191,7 +97,7 @@ class ProductsController {
     async deleteOne(req, res, next) {
         const {id} = req.params
         try {
-            fs.rmSync(`static/${id}`, { recursive: true, force: true });
+            FilesService.DeleteDir(id)
             ProductInfo.destroy({where: {productId:id}})
             ProductDescription.destroy({where: {productId:id}})
             const result = await Products.destroy({where:{id}})
