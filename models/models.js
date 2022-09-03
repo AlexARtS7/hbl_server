@@ -9,6 +9,10 @@ const User = sequelize.define('user', {
     role: {type: DataTypes.STRING, defaultValue: 'USER'}
 })
 
+const BasketProducts = sequelize.define('basket_products', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+})
+
 const Products = sequelize.define('products', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
     name: {type: DataTypes.STRING, unique: true, allowNull: false},
@@ -33,6 +37,12 @@ const ProductDescription = sequelize.define('product_description', {
     description: {type: DataTypes.TEXT, allowNull: false}
 })
 
+User.hasMany(BasketProducts)
+BasketProducts.belongsTo(User)
+
+Products.hasMany(BasketProducts)
+BasketProducts.belongsTo(Products)
+
 Type.hasMany(Products)
 Products.belongsTo(Type)
 
@@ -44,6 +54,7 @@ ProductDescription.belongsTo(Products)
 
 module.exports = {
     User,
+    BasketProducts,
     Products, 
     ProductInfo,
     ProductDescription,
