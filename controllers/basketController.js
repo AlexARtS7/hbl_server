@@ -1,8 +1,8 @@
-const {Basket, BasketProducts, Products} = require('../models/models')
+const {Basket, BasketProducts } = require('../models/models')
 const ApiError = require('../error/ApiError');
 
 class BasketController {
-    async addProduct(req, res, next) {
+    async addProductToBasket(req, res, next) {
         try {
         const {userId, productId, name} = req.body
         const exist = await Basket.findOne({where: {userId}, include: [{ model: BasketProducts, where: {productId}}]})
@@ -16,15 +16,10 @@ class BasketController {
             next(ApiError.badRequest(e.message))
         }
     }
-    async getProducts(req, res, next) {
+    async getBasketProducts(req, res, next) {
         try {
             const {userId} = req.query
-            const result = await Basket.findAll({
-                where: {userId}, 
-                include: [{model: BasketProducts,
-                include: [{ model: Products}], 
-                attributes: ['id', 'basketId', 'name']}],                
-                })
+            const result = await Basket.findAll({ where: {userId}, include: {all: true, nested: true} })
             return res.json(result[0].basket_products)
         } catch (e) {
             next(ApiError.badRequest(e.message))

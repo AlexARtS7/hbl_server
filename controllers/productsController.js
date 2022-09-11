@@ -65,7 +65,7 @@ class ProductsController {
             next(ApiError.badRequest(e.message))
         }
     }
-    async getAll(req, res) {
+    async getProducts(req, res) {
         let {typeId, limit, page} = req.query
         page = Number(page || 1)
         limit = Number(limit || 9)
@@ -75,9 +75,9 @@ class ProductsController {
         if (typeId) products = await Products.findAndCountAll({where:{typeId}, limit, offset})
         return res.json(products)
     }
-    async getOne(req, res) {
+    async getOneProduct(req, res) {
         const {id} = req.params
-        const product = await Products.findOne({where:{id}})
+        const product = await Products.findOne({where:{id}, include: {all: true}})
         return res.json(product)
     }
 

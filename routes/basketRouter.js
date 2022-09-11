@@ -3,7 +3,7 @@ const router = new Router()
 const basketController = require('../controllers/basketController')
 const checkAuth = require('../middleware/checkAuthMiddleware')
 
-router.post('/addproduct', checkAuth(), basketController.addProduct)
-router.get('/products', checkAuth(), basketController.getProducts)
+router.post('/addproduct', checkAuth(), basketController.addProductToBasket)
+router.get('/products', checkAuth(), basketController.getBasketProducts)
 
 module.exports = router
