@@ -3,22 +3,16 @@ const uuid = require('uuid')
 const path = require('path')
 
 class FilesService {
-    async MakeDir(id) {
-        const result = fs.mkdirSync(`./static/${id}`)
-        return result
-    }
     async DeleteDir(id) {
         const result = fs.rmSync(`static/${id}`, { recursive: true, force: true })
         return result
     }
     async SaveFiles(props) {
-        let {files, id, filesArray} = props
+        let {files, id} = props
         if(!Array.isArray(files)) files = [files]
-        if(filesArray) filesArray = JSON.parse(filesArray)
-
         let fileNames = []
-        if(filesArray) fileNames = [...filesArray]
-        
+        const exists = fs.existsSync(path.resolve(__dirname, '..', `static/${id}`))
+        if(!exists) fs.mkdirSync(`./static/${id}`)
         files.forEach(e => {
             const fileName = uuid.v4() + ".jpg"
             e.mv(path.resolve(__dirname, '..', `static/${id}`, fileName))

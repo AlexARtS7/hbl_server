@@ -20,9 +20,15 @@ const BasketProducts = sequelize.define('basket_products', {
 
 const Products = sequelize.define('products', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: DataTypes.STRING, unique: true, allowNull: false},
-    price: {type: DataTypes.INTEGER, allowNull: false},
-    img: {type: DataTypes.TEXT, defaultValue: 'ds' }
+    name: {type: DataTypes.STRING, unique: true},
+    price: {type: DataTypes.INTEGER},
+    description: {type: DataTypes.TEXT}
+})
+
+const Images = sequelize.define('img', {
+    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
+    img: {type: DataTypes.STRING},
+    preview: {type: DataTypes.BOOLEAN, defaultValue: false}
 })
 
 const Type = sequelize.define('type', {
@@ -37,11 +43,6 @@ const ProductInfo = sequelize.define('product_info', {
     idKey: {type: DataTypes.INTEGER, allowNull: false, unique: true}
 })
 
-const ProductDescription = sequelize.define('product_description', {
-    id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    description: {type: DataTypes.TEXT, allowNull: false}
-})
-
 User.hasOne(Basket)
 Basket.belongsTo(User)
 
@@ -51,21 +52,21 @@ BasketProducts.belongsTo(Basket)
 Products.hasMany(BasketProducts)
 BasketProducts.belongsTo(Products)
 
+Products.hasMany(Images)
+Images.belongsTo(Products)
+
 Type.hasMany(Products)
 Products.belongsTo(Type)
 
 Products.hasMany(ProductInfo);
 ProductInfo.belongsTo(Products)
 
-Products.hasOne(ProductDescription);
-ProductDescription.belongsTo(Products)
-
 module.exports = {
     User,
     Basket,
     BasketProducts,
     Products, 
+    Images,
     ProductInfo,
-    ProductDescription,
     Type
 }

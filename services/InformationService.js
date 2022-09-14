@@ -1,9 +1,9 @@
-const {ProductInfo, ProductDescription} = require('../models/models')
+const { ProductInfo } = require('../models/models')
 
 class InformationService {
-    async setInfo({info,id}) {
-        info = JSON.parse(info)    
+    async setInfo({info,id}) {   
         const allInfo = await ProductInfo.findAll({ where: {productId:id}})
+        
         if(info.length < allInfo.length) {
             allInfo.forEach(item => info.find(i => i.idKey === item.idKey) ? null:
                 ProductInfo.destroy({where: {idKey:item.idKey}}))
@@ -19,17 +19,6 @@ class InformationService {
                 }
             })
         )
-        return id    
-    }
-    async setDescription({description,id}) {
-        ProductDescription.findOne({where: {productId:id}})
-        .then(response => {
-            if(response !== null) {
-                ProductDescription.update({description},{where: {productId:id}})  
-            } else {
-                ProductDescription.create({description, productId:id})
-            }
-        })
         return id    
     }                
 }
