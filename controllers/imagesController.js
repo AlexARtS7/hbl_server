@@ -19,7 +19,7 @@ class ImagesController {
     async setPreview(req, res, next) {
         try {
             const {id, productId} = req.query  
-            Images.update({preview:false}, {where: {preview:true, productId}})  
+            await Images.update({preview:false}, {where: {preview:true, productId}})  
             const result = await Images.update({preview:true}, {where: {id}})   
             return res.json(result) 
         } catch (e) {
