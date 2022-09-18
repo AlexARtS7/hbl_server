@@ -1,4 +1,5 @@
 const InformationService = require('../services/InformationService')
+const FilesService = require('../services/FilesService')
 const {Products, ProductInfo, Images} = require('../models/models')
 const ApiError = require('../error/ApiError')
 class ProductsController {
@@ -43,7 +44,9 @@ class ProductsController {
     async destroyProduct(req, res, next) {
         try {
             const {id} = req.query
-            ProductInfo.destroy({where:{productId:id}})
+            await FilesService.DeleteDir(id)
+            await Images.destroy({where: {productId:id}})
+            await ProductInfo.destroy({where:{productId:id}})
             const product = await Products.destroy({where:{id}})
             return res.json(product)
         } catch (e) {

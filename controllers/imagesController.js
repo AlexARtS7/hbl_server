@@ -9,8 +9,13 @@ class ImagesController {
             const {files} = req.files 
             const fileNames = await FilesService.SaveFiles({files, id})
             await Images.bulkCreate(fileNames.map(filename => ({img: filename, productId: Number(id)})))
-            if(await Images.findOne({where: {preview:true, productId:id}}) === null) 
-                Images.update({preview: true}, {where: {productId:id}}, {limit: 1})
+
+            if(await Images.findOne({where: {preview:true, productId:id}}) === null) {
+                const firstImg = await Images.findOne({where: {productId:id}})
+                firstImg.preview = true
+                await firstImg.save()
+            }
+            
             return res.json(fileNames)          
         } catch (e) {
             next(ApiError.badRequest(e.message))
