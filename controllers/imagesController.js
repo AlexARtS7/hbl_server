@@ -21,6 +21,16 @@ class ImagesController {
             next(ApiError.badRequest(e.message))
         }
     }
+    async deleteFiles(req, res, next) {
+        try {
+            let {id, imgs} = req.query
+            await FilesService.DeleteFiles({id, imgs})
+            const result = await Images.destroy({where: {productId:id, img: [...imgs]}})
+            return res.json(result)          
+        } catch (e) {
+            next(ApiError.badRequest(e.message))
+        }
+    }
     async setPreview(req, res, next) {
         try {
             const {id, productId} = req.query  

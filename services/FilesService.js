@@ -21,11 +21,11 @@ class FilesService {
         return fileNames
     }
     async DeleteFiles(props) {
-        let {id, filesArray} = props
-        filesArray.forEach(e => {
-            fs.unlinkSync(path.resolve(__dirname, '..', `static/${id}`, e.name))
+        let {id, imgs} = props
+        imgs.forEach(e => {
+            fs.unlinkSync(path.resolve(__dirname, '..', `static/${id}`, e))
         })
-        return filesArray
+        return 'deleted'
     }
 }
 
