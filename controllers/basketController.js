@@ -18,9 +18,13 @@ class BasketController {
     }
     async getBasketProducts(req, res, next) {
         try {
-            const {userId} = req.query
-            const result = await Basket.findAll({ where: {userId}, include: {all: true, nested: true} })
-            return res.json(result[0].basket_products)
+            let {userId, limit, page} = req.query
+            page = Number(page || 1)
+            limit = Number(limit || 9)
+            let offset = page * limit - limit
+            const {id:basketId} = await Basket.findOne({where: {userId}})
+            const result = await BasketProducts.findAndCountAll({where:{basketId}, limit, offset, include: {all:true, nested: true}})
+            return res.json(result)
         } catch (e) {
             next(ApiError.badRequest(e.message))
         }
