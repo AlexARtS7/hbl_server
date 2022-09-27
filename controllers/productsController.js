@@ -25,8 +25,8 @@ class ProductsController {
             limit = Number(limit || 9)
             let offset = page * limit - limit
             let products
-            if (!typeId) products = await Products.findAndCountAll({limit, offset, include: {all: true}})
-            if (typeId) products = await Products.findAndCountAll({where:{typeId}, limit, offset, include: {all:true}})
+            if (!typeId) products = {rows:await Products.findAll({limit, offset, include: {all:true}}), count:await Products.count()}
+            if (typeId) products = {rows:await Products.findAll({where:{typeId}, limit, offset, include: {all:true}}), count:await Products.count({where:{typeId}})}
             return res.json(products)       
         } catch (e) {
             next(ApiError.badRequest(e.message))

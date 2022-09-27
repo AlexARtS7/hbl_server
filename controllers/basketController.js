@@ -23,7 +23,7 @@ class BasketController {
             limit = Number(limit || 9)
             let offset = page * limit - limit
             const {id:basketId} = await Basket.findOne({where: {userId}})
-            const result = await BasketProducts.findAndCountAll({where:{basketId}, limit, offset, include: {all:true, nested: true}})
+            const result = {rows:await BasketProducts.findAll({where:{basketId}, limit, offset, include: {all:true, nested: true}}), count:await BasketProducts.count({where: {basketId}})}
             return res.json(result)
         } catch (e) {
             next(ApiError.badRequest(e.message))
