@@ -6,12 +6,12 @@ class ApiError extends Error {
         this.index = index
     }
 
-    static badRequest({message, index = 0}) {
-        return new ApiError(404, message, index)
+    static badRequest(message, errorType = '') {
+        return new ApiError(404, message, errorType)
     }
 
-    static internal(message, index = 0) {
-        return new ApiError(500, message, index)
+    static internal(message, errorType) {
+        return new ApiError(500, message, errorType)
     }
 
     static forbidden(message) {

@@ -18,7 +18,7 @@ class UserController {
         }
         const candidate = await User.findOne({where:{email}})
         if(candidate) {
-            return next(ApiError.badRequest('Пользователь с таким email уже существует', 1))
+            return next(ApiError.badRequest('Пользователь с таким email уже существует', 'email'))
         }
         const hashPassword = await bcrypt.hash(password, 5)
         const user = await User.create({login, email, role, password: hashPassword})
@@ -31,11 +31,11 @@ class UserController {
         const user = await User.findOne({where: {email}})
         
         if(!user) {
-            return next(ApiError.internal('Пользователь с таким email не найден', 1))
+            return next(ApiError.internal('Пользователь с таким email не найден', 'email'))
         }
         let comparePassword = bcrypt.compareSync(password, user.password)
         if(!comparePassword) {
-            return next(ApiError.internal('Указан неверный пароль', 2))
+            return next(ApiError.internal('Указан неверный пароль', 'password'))
         }
         const token = generateJwt(user.id, user.login, user.email, user.role)
         return res.json({token})
