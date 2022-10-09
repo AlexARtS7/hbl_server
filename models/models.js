@@ -31,9 +31,9 @@ const Images = sequelize.define('img', {
     preview: {type: DataTypes.BOOLEAN, defaultValue: false}
 })
 
-const Type = sequelize.define('type', {
+const Categories = sequelize.define('category', {
     id: {type: DataTypes.INTEGER, primaryKey: true, autoIncrement: true},
-    name: {type: DataTypes.STRING, allowNull: false},
+    name: {type: DataTypes.STRING, allowNull: false}
 })
 
 const ProductInfo = sequelize.define('product_info', {
@@ -55,8 +55,8 @@ BasketProducts.belongsTo(Products)
 Products.hasMany(Images)
 Images.belongsTo(Products)
 
-Type.hasMany(Products)
-Products.belongsTo(Type)
+Categories.hasMany(Products)
+Products.belongsTo(Categories)
 
 Products.hasMany(ProductInfo);
 ProductInfo.belongsTo(Products)
@@ -68,5 +68,5 @@ module.exports = {
     Products, 
     Images,
     ProductInfo,
-    Type
+    Categories
 }

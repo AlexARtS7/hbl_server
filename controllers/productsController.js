@@ -5,11 +5,11 @@ const ApiError = require('../error/ApiError')
 class ProductsController {
     async createProduct(req, res, next) {
         try {
-            let {id, name, price, typeId, info, description} = req.body, product
+            let {id, name, price, categoryId, info, description} = req.body, product
             if(id){
-                product = await Products.update({name, price, typeId, description},{where: {id}})
+                product = await Products.update({name, price, categoryId, description},{where: {id}})
             } else {
-                product = await Products.create({name, price, typeId, description})
+                product = await Products.create({name, price, categoryId, description})
             }
             
             if(info) InformationService.setInfo({info, id:product.id || id})
@@ -20,13 +20,13 @@ class ProductsController {
     }
     async getProducts(req, res, next) {
         try {
-            let {typeId, limit, page} = req.query
+            let {categoryId, limit, page} = req.query
             page = Number(page || 1)
             limit = Number(limit || 9)
             let offset = page * limit - limit
             let products
-            if (!typeId) products = {rows:await Products.findAll({limit, offset, include: {all:true}}), count:await Products.count()}
-            if (typeId) products = {rows:await Products.findAll({where:{typeId}, limit, offset, include: {all:true}}), count:await Products.count({where:{typeId}})}
+            if (!categoryId) products = {rows:await Products.findAll({limit, offset, include: {all:true}}), count:await Products.count()}
+            if (categoryId) products = {rows:await Products.findAll({where:{categoryId}, limit, offset, include: {all:true}}), count:await Products.count({where:{categoryId}})}
             return res.json(products)       
         } catch (e) {
             next(ApiError.badRequest(e.message))
