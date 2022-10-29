@@ -20,13 +20,16 @@ class ProductsController {
     }
     async getProducts(req, res, next) {
         try {
-            let {categoryId, limit, page} = req.query
+            let {categories, limit, page} = req.query
+            if(categories) categories = categories.map(e => Number(e))
             page = Number(page || 1)
             limit = Number(limit || 9)
             let offset = page * limit - limit
             let products
-            if (!categoryId) products = {rows:await Products.findAll({limit, offset, include: {all:true}}), count:await Products.count()}
-            if (categoryId) products = {rows:await Products.findAll({where:{categoryId}, limit, offset, include: {all:true}}), count:await Products.count({where:{categoryId}})}
+            if (!categories) products = {rows:await Products.findAll({limit, offset, include: {all:true}}), count:await Products.count()}
+            if (categories) products = 
+                {rows:await Products.findAll({where:{categoryId:categories}, limit, offset, include: {all:true}}), 
+                count:await Products.count({where:{categoryId:categories}})}
             return res.json(products)       
         } catch (e) {
             next(ApiError.badRequest(e.message))

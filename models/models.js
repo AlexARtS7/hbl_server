@@ -58,6 +58,9 @@ Images.belongsTo(Products)
 Categories.hasMany(Products)
 Products.belongsTo(Categories)
 
+Categories.hasMany(Categories)
+Categories.belongsTo(Categories)
+
 Products.hasMany(ProductInfo);
 ProductInfo.belongsTo(Products)
 
